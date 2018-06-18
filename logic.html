@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>BDI Battleship</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/shop-item.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="index.html">Start Bootstrap</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="index.html">Home
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+
+      <div class="row">
+
+        <div class="col-lg-3">
+          <h1 class="my-4">Content</h1>
+          <div class="list-group">
+            <a href="index.html" class="list-group-item">The game</a>
+            <a href="software_architecture.html" class="list-group-item">Software Architecture</a>
+            <a href="#" class="list-group-item active">BDI Agent</a>
+          </div>
+        </div>
+        <!-- /.col-lg-3 -->
+
+        <div class="col-lg-9">
+
+          <div class="card mt-4">
+            <img class="card-img-top img-fluid" src="https://thesmatstudents.files.wordpress.com/2017/06/logic_368.jpg" alt="">
+            <div class="card-body">
+              <h3 class="card-title">BDI Agent</h3>
+              <p class="card-text">
+                The BDI-agent reasons using a set of propositional atoms, and higher order statements. The statements are explained from the perspective of one player, playing against her opponent. Lets refer to our player as Bob, which is playing against Alice for clear writing.
+                <br /><br />
+                The propositional statements are represented using a grid to encode its evaluation for coordinates corresponding to coordinates of the board. Often a 1 encodes that a statement is true for this location. A 0 encodes that there is no information regarding this statement, hence it doesn’t necessarily mean that the statement is false at this location.
+                <br /><br />
+                First, let’s start laying down the basic propositional atoms and the believes Alice has about the game situation regarding a single point in time:
+                <br /><br/>
+                
+                <h4>Propositional Atoms</h4>
+                P: The locations on Bob’s board where is ship part is positioned.
+                <br /><br />
+                P^: The locations on Alice her board where a ship part is positioned.
+                <br /><br />
+                P<sub>s</sub>: for all ships x, P<sub>s</sub> indicates the positions where x is located on Bob’s board. 
+                E.g, for Bob his Destroyer, we have P<sub>Destroyer</sub>, denoting for each location whether a part of this Destroyer is located there.
+                <br /><br />
+                P^<sub>s</sub>: Similar as P<sub>s</sub>, except it indicates the ship positions of Alice instead of Bob.
+                <br /><br />
+                
+                H<sub>Bob</sub>: The positions where Bob hit a part of Alice her ships.
+                E.g, if Bob shot Alice at a position (x,y), after which Alice says he hit something, H<sub>Bob</sub>(x,y) will become true. 
+                H<sub>Bob</sub> will be considered ‘common knowledge’, since once a ship is hit, both Alice and Bob will know this.
+                <br /><br />
+                H<sub>Alice</sub>: Since H<sub>Bob</sub> is common knowledge, H<sub>Alice</sub> is also common knowledge, hence known to Bob.
+                <br /><br />
+                S<sub>Bob</sub>: The positions where Bob shot at Alice.
+                This is similar to H<sub>Bob</sub>, except that S<sub>Bob</sub>(x,y) will be considered true after a shot, regardless of whether a ship part of Alice was laying there. Also S<sub>Bob</sub> is considered common knowledge, both players are informed about the event and the outcome.
+                <br /><br />
+                S<sub>Alice</sub>: The positions where Alice shot at Bob. Since S<sub>Bob</sub> is common knowledge, S<sub>Alice</sub> is also common knowledge, hence known to Bob.
+                <br /><br/>
+                The following atoms are single values, and have no coordinates references to them:
+                <br /><br/>
+                Alive<sub>Bob</sub>(s): For all ships x from Bob, Alive<sub>Bob</sub>(s) denotes whether Bob’s ships x is still alive. This is common knowledge, since both players know in the beginning which ships both players start out with, at which point all ships are ‘alive’. When a certain ship from Bob is killed, this is known to Bob, and after announcement also to Alice.
+                <br /><br />
+                Alive<sub>Alice</sub>(s): Same as Alive<sub>Bob</sub>, but regarding Alice her ships.
+                <br /><br />
+                <h4>Believes and Knowledge</h4>
+                For all propositions above (Y), except P^<sub>s</sub>, it also holds that K<sub>Bob</sub>(Y), since it is either his own board, or a proposition regarding common knowledge.
+                K<sub>Bob</sub>(P^) is true in a position if this location is either hit, after which it became known that a ship part was located there, or if Alice told Bob, due to the symmetric game communication.
+                Once Alice is hit by Bob at a position (x,y), Bob can reason about possible adjacent tiles where more parts of that ship could be.
+                <br/><br/>
+                A<sub>s</sub>: for all Alice her ships x, A<sub>s</sub> indicates positions for each location whether a a part of x might be (in)directly adjacent to a place where Alice is already hit.
+                <br/><br/>
+                This is implemented using the information from H<sub>Bob</sub> (Places where Bob hit Alice). If Bob hit Alice at some location, all Alice her remaining ships are considered. If an near-adjacent tile of the hit location is within the range of the ship’s length, this near-adjacent tile is considered a possible location same ship which is already hit.
+                <br /><br/>
+                
+                <h4>Preference of State and Intentions</h4>
+                Each agent has a current state, which is are the total set of believes regarding the game in a single point in time. In each turn a agent has to perform an action, which is shooting at a arbitrary location on the opponents board, after which the agents state will be updated to a new one, including the newly gained information.
+                <br/><br/>
+                When Bob plays, he can reason about his options, what Alice might do afterwards, and what Bob could do after these options. After considering the resulting states, Bob has to act according to his intentions.
+                <br/><br/>
+                For this BDI-agent, the intentions are defined by ending up in a state with the highest possible preference. This preference is defined by a function of a given state, which is as follows:
+                <br/> <br/>
+<pre>
+Total ship parts hit + Total shipparts left – Total number of places of which the opponent knows a shiplocation of mine +random(-0.1, 0.1)  + Number of potential adjacent ship parts that might lay at the position shot at.
+</pre>
+                The random factor is used to disambiguate between states with the same preference. The random factor is too low to influence a choise, but causes a random choise out of the maximal candidates.
+                <br/><br />
+
+                <h4>Reasoning in time</h4>
+                When Bob reasons what Alice might do after Bob did a certain, Bob has to reason ‘for Alice’, given  what Bob knows what Alice knows. Since all believes, except for the believes each others board, are common knowledge, Bob can use most of its knowledge for reasoning for Alice. When Bob explores Alice her possible actions, Bob will act for Alice as if she only had the ship-parts on her board of which Bob is certain they are there.
+                <br/><br/>
+                When Bob reasons what actions he might perform, he will avoid shooting a location where he already shot at, also he will fire only at a location if he believes that it might contain a shippart of a ship he already hit. This latter strategy is used as a heuristic to prune the exploration tree, for more tractable computation. If this leaves no option for Bob, he will fire at a random location where he didn’t shoot at before.
+                <br/><br/>
+                Using this approach Bob can reason about future states, where he will choose a action according to his intention: choose an action such that you will probably end up in a state with the highest preference.
+                <br /><br/>
+                
+                <h4>Goals and Actions</h4>
+                Bob’s goal in the game is to hit all ship parts of Alice, while losing as little as possible shipparts from himself. Bob will try to reach this goal by acting according his intentions, which is to hit as many shipparts as possible, without revealing to much about his own ships. Bob decides on where to shoot using the following protocol:
+                <br/><br/>
+                Preferred action:<br/><br/>
+                Bob will try to find an action according to his intention. If his possible actions, according to the heuristic, is an empty set, then Bob will fire randomly.
+                <br/><br/>
+                Random shot:<br/><br/>
+                If Bob fire’s randomly, he will fire at an arbitrary location at which he didn’t fire before. This way new knowledge can be gained for later exploration.
+              </p>
+            </div>
+          </div>
+          <br />
+          <!-- /.card -->
+
+        </div>
+        <!-- /.col-lg-9 -->
+
+      </div>
+
+    </div>
+    <!-- /.container -->
+
+    <!-- Footer -->
+    <footer class="py-5 bg-dark">
+      <div class="container">
+        <p class="m-0 text-center text-white"></p>
+      </div>
+      <!-- /.container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  </body>
+
+</html>
